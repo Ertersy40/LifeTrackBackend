@@ -16,8 +16,8 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5173",    # Vite default
         "http://localhost:3000",    # if you ever run on 3000
-        "https://vapi.ai"
-        "https://api.vapi.ai"
+        "https://vapi.ai",
+        "https://api.vapi.ai",
         "https://life-track-two.vercel.app"
     ],
     allow_credentials=True,
