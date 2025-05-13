@@ -18,7 +18,7 @@ app.add_middleware(
         "http://localhost:3000",    # if you ever run on 3000
         "https://vapi.ai"
         "https://api.vapi.ai"
-        # "https://your-production-domain.com"
+        "https://life-track-two.vercel.app/"
     ],
     allow_credentials=True,
     allow_methods=["*"],          # allow GET, POST, OPTIONS, etc.
