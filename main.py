@@ -106,13 +106,13 @@ async def onboarding(req: OnboardRequest):
         resp = supabase.table("user_data") \
                         .select("*") \
                         .eq("phone_number", req.phone_number) \
-                        .single() \
                         .execute()
     except Exception as e:
         # e.g. network failure, auth failure, bad URL, etc.
         raise HTTPException(500, f"Supabase request failed: {e}")
-    if resp:
-        print("User already onboarded!")
+    
+    if len(resp.data):
+        print("User already onboarded!", resp.data)
         return {"sid": "OnboardedAlready"}
     
     print("User not onboarded yet! Making call...")
