@@ -3,7 +3,8 @@ import os
 import json
 import aiohttp
 from dotenv import load_dotenv
-
+from makeCall import makeTaskCall
+from helper import convert_iso_to_gmt_plus10, convert_local_to_iso
 # Global cost counter:
 total_cost = 0
 
@@ -85,6 +86,7 @@ Each object should be structured in the following format:
     return graphs
 
 async def getInitialUserObject(transcription: str) -> dict:
+
     prompt = f"""
 {transcription}
 -----------------------
@@ -120,3 +122,31 @@ You can have as many keys and use lists etc. as you need to describe the user.
 """
     userObject = await askLLM(prompt, isJson=True)
     return userObject
+
+async def setNextCall(customerNumber: str, customerData: dict, transcription: str, createdAt: str, dataToCollect: dict={}):
+    # Format time from 2025-05-12T05:17:19.039Z into May 12, 2025 at 3:17:19 PM
+    formattedTime = convert_iso_to_gmt_plus10(createdAt)
+    
+    print(formattedTime)
+    prompt = f"""
+    {transcription}
+    -----------------------
+    Based on the above transcription of a phone call,
+    return a json that represents the time that the user wants to have the call next
+    The time of the call was {formattedTime}.
+    If they never mentioned a new time or the time they set was invalid (yesterday etc.): 
+    just set it to tommorrow, same time.
+    Assume tomorrow unless they specifically say.
+    Do not explain or question anything. Just return the string in the exact same format as the following:
+    {formattedTime}
+    Don't put quotations around it to show it's a string or anything. Just the text. Nothing else.
+    It will be parsed directly so leave it as is.
+    """
+    
+    nextCall = await askLLM(prompt)
+    
+    iso_time = convert_local_to_iso(nextCall)
+    
+    makeTaskCall(customerNumber, iso_time, customerData, dataToCollect)
+    
+    return iso_time

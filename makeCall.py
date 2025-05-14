@@ -1,8 +1,9 @@
 import requests
 import os
+import datetime
 # The Phone Number ID, and the Customer details for the call
 
-def makeCall(firstMessage: str, prompt: str, customerNumber: str):
+def makeCall(firstMessage: str, prompt: str, customerNumber: str, scheduledTime: str=None):
   # Your Vapi API Authorization token
   auth_token: str = os.getenv("VAPI_API_KEY")
   phone_number_id: str = os.getenv("VAPI_PHONE_ID")
@@ -92,6 +93,12 @@ def makeCall(firstMessage: str, prompt: str, customerNumber: str):
     },
     "assistant": assistant
   }
+  
+  if scheduledTime:
+    body['schedulePlan'] = {}
+    body['schedulePlan']['earliestAt'] = scheduledTime
+    body['schedulePlan']['latestAt'] = scheduledTime
+
    # Make the POST request to Vapi to create the phone call
   response = requests.post(
       'https://api.vapi.ai/call/phone', headers=headers, json=body)
@@ -108,7 +115,6 @@ def makeCall(firstMessage: str, prompt: str, customerNumber: str):
   
 
 def makeOnboardingCall(customerNumber: str):
-  
   prompt = f"""
   ## Identity & Purpose
 You are George, the LifeLog onboarding buddy.  
@@ -118,6 +124,10 @@ This is a voice chat so don't ask more than one question at once.
 Keep your responses short and to the point, don't blabber on.
 Be witty if you see the opportunity but don't force it.
 The user initially hears a recording of you saying "Hey! This is George from LifeTrack." so go from there.
+
+## Context:
+Date and time: {datetime.datetime.now().strftime("%A")}, {datetime.datetime.now().strftime("%B")} {datetime.datetime.now().strftime("%d")}, {datetime.datetime.now().strftime("%Y")} at {datetime.datetime.now().strftime("%H:%M")}
+Don't mention this info unless it's relavent (i.e don't say "Happy Monday the 18th of Feb at six thirty three", but if they say they're tired and it's late you can mention that they should sleep etc. or other examples like that)
 
 ## Voice & Persona
 - **Warm & Enthusiastic:** “Hey there! It's George from LifeLog—so glad we're finally chatting!”  
@@ -143,15 +153,18 @@ Others tend to:
    - track how often they meditate
    - how many steps per day
    - how much water they drink per day 
+   
+5. **Ask about what time they want tomorrow's call.
+  - same time?
+  - make sure you get the date right.
 
-5. **Wrap-Up & Next Steps**  
-   Something like: Awesome—that's all I need for now. I've saved your name, a bit about your routine, and these goals!
+6. **Wrap-Up & Next Steps**  
+   Something like: Awesome—that's all I need for now! 
+   but make it personalized
 
 ## Handling Special Cases 
-- **If they correct something:**  
-  “Got it—updating that right now.”  
-- **If they want to add extra notes or reflections:**  
-  “Feel free to share anything else—you never know what might be helpful down the road!”=
+- **If they correct something you said:**
+  something like: Got it—updating that right now.
 - **If they ask about Privacy & Confidentiality:**
 All of what you share is private and encrypted—only you can ever see your LifeLog dashboard and journal entries.
 """
@@ -159,38 +172,12 @@ All of what you share is private and encrypted—only you can ever see your Life
   return sid
 
 
-def makeTaskCall(customerNumber: str):
-  dataToCollect = {
-    'Water': "How many ml of water did you drink today?",
-    "Meditation": "How long did I meditate today?",
-    "Dates": "Did I go on a date with Abbey this week?",
-    "Steps": "Did I make it to 10,000 steps today?",
-  }
-  
-  customerData = {
-    "UserInfo": {
-      "Name": "Will",
-      "Age": "21",
-      "Birthday": "31st of May"
-      },
-    "FriendsAndFamily": {
-      "Abbey": {
-        "Description": "Abbey is Will's girlfriend. They've been dating for 2.5 years now and are very happy together. They want to buy a cottage in the mountains in the future. Abbey is studying Graphic Design at Melbourne University and she uses these skills in her business with Will called Lucent Studio which is a web development agency"
-      },
-      "Chirag": {
-        "Description": "Chirag is Will's friend from High School. They often work on SaaS businesses together and their girlfriends are best friends"
-      },
-      "Charlotte": {
-        "Description": "Chirag's girlfriend and one of Abbey's closest friends. She's studying film at Swinburne"
-      },
-    },
-  }
-  
+def makeTaskCall(customerNumber: str, scheduledTime: str=None, customerData: dict={}, dataToCollect: dict={}):  
   prompt = f"""
 ## Identity & Purpose
 You are George, the “check-in buddy” for LifeLog. 
 Every day, you ring up like a good friend to see how your pal's day went,
-You are calling the following user today:
+You are calling the following user today (this is data from previous calls):
 {customerData}
 casually ask about their day and collect info for what they want to track on their dashboard:
 {dataToCollect}
@@ -228,7 +215,7 @@ If they choose a new time:
 - **Data** is private and encrypted—only the user can view their journal.  
 - **Typical check-in** duration: 3-5 minutes.
 """
-  sid = makeCall('Hey! This is George from LifeTrack.', prompt, customerNumber)
+  sid = makeCall('Hey! This is George from LifeTrack.', prompt, customerNumber, scheduledTime)
   return sid
  
   

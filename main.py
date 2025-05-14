@@ -5,7 +5,7 @@ from typing import List, Optional
 import uvicorn
 from makeCall import makeTaskCall, makeOnboardingCall
 from supabaseClient import supabase
-from transcriptionAnalysis import generateGraphObjects, getInitialUserObject
+from transcriptionAnalysis import generateGraphObjects, getInitialUserObject, setNextCall
 from graphs import add_graph
 from helper import format_conversation, updateStatus, replace_user_data
 
@@ -62,6 +62,8 @@ async def webhook(request: Request):
                 add_graph(graph, phone_number)
             
             userObj = await getInitialUserObject(formatted_convo)
+            await setNextCall(phone_number, userObj, formatted_convo, payload['message']['call']['createdAt'], graphs)
+            
             print("User Object:", userObj)
             replace_user_data(phone_number, userObj)
         else:
