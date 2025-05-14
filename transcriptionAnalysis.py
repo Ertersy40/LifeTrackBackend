@@ -75,9 +75,9 @@ Each object should be structured in the following format:
     "description": "A description (less than 100 characters) of the data recorded from the user's perspective"
     "type": "The type of graph that best represents the data. Choose from the following: ['contribution', 'line', 'bar']. Contribution is a heatmap style graph that shows how frequently someone does something. Line is a line chart. Bar is a bar chart."
     "settings":    {{
-        // contribution → {{ "totalCells": number }}
-        // line         → {{  }}  // no settings
-        // bar          → {{ "timeFrame": 'week' | 'month' | 'year' }}
+        // if it's a contribution graph → {{ "totalCells": number }}
+        // if it's a line graph         → {{  }}  // no settings
+        // if it's a bar graph          → {{ "timeFrame": 'week' | 'month' | 'year' }}
     }}
 }}
 """
@@ -113,6 +113,9 @@ only base it off the transcription
   }}
 See how that starts with any info learned about Will and then adds a friends and family given that he must have described his friends and family in the relevant transcription?
 Again. That is just an example to show you the structure. No matter how similar the actualy user is, do not use any of that data.
+This should only be an object that represents them as a person. Don't add things like the goals they want to set every day, that will be handled by another function.
+You should be logging longer term things like their friends, family, projects, how they want to be talked to, their job, etc.
+Calendar items will be logged by another function too. Though things like "plays basketball every Tuesday" is still important to note that they play basketball.
 You can have as many keys and use lists etc. as you need to describe the user.
 """
     userObject = await askLLM(prompt, isJson=True)

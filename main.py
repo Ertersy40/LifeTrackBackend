@@ -71,10 +71,15 @@ async def webhook(request: Request):
     elif messageType == "status-update":
         print("\n\n\n STATUS UPDATE \n\n\n")
         print(sid)
-        if payload['message']['status'] == 'in-progress':
+        print(payload['message']['status'])
+        status = payload['message']['status']
+        if status == 'in-progress':
             updateStatus(sid, 'answered')
             print("Call in progress!")
             # Update Supabase with the new status
+        elif status == 'ended':
+            updateStatus(sid, 'completed')
+            print('Call ended!')
             
         
     return {
@@ -95,7 +100,22 @@ async def onboarding(req: OnboardRequest):
     Gets info like who they are, what their goals are,
     what time they want to be called etc.
     """
-    print("Onboarding request received! Making call...")
+    print("AHHHHHH")
+    
+    try:
+        resp = supabase.table("user_data") \
+                        .select("*") \
+                        .eq("phone_number", req.phone_number) \
+                        .single() \
+                        .execute()
+    except Exception as e:
+        # e.g. network failure, auth failure, bad URL, etc.
+        raise HTTPException(500, f"Supabase request failed: {e}")
+    if resp:
+        print("User already onboarded!")
+        return {"sid": "OnboardedAlready"}
+    
+    print("User not onboarded yet! Making call...")
     sid = makeOnboardingCall(req.phone_number)
     if not sid:
         print("Calling failed? No SID")
@@ -143,10 +163,12 @@ async def onboarding(req: OnboardRequest):
             .execute()
         )
     except Exception as e:
+        print("AHHH FAILED 1", e)
         # you might choose to delete new_session here if you want full rollback
         raise HTTPException(500, f"Supabase insert (user_data) failed: {e}")
 
     if not ud_resp.data or not isinstance(ud_resp.data, list):
+        print("AHHH FAILED 2")
         raise HTTPException(500, "No data returned after inserting user_data")
     
     return {"sid": sid}
