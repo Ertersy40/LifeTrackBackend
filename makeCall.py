@@ -107,7 +107,10 @@ def makeCall(firstMessage: str, prompt: str, customerNumber: str, scheduledTime:
   if response.status_code == 201:
       print('Call created successfully')
       print(response.json())
-      return response.json()['transport']['callSid']
+      if 'transport' in response.json():
+        return response.json()['transport']['callSid']
+      else:
+        return response.json()['id']
   else:
       print('Failed to create call')
       print(response.text)
