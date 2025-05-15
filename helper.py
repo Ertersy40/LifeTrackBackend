@@ -47,7 +47,7 @@ def updateStatus(call_sid: str, new_status: str):
     # resp.data should be a list of updated rows
     updated_rows = getattr(resp, "data", None)
     if not updated_rows or not isinstance(updated_rows, list):
-        raise RuntimeError(f"No session found with call_sid={call_sid}")
+        raise RuntimeError(f"No session found with call_sid: {call_sid}")
 
     # return the first (and only) updated row
     return updated_rows[0]
@@ -127,16 +127,16 @@ def saveCall(callId: str, callType: str, customerNumber: str):
     session_row = {
         "id": callId,
         "call_type": callType,
-        "phone_number": customerNumber,
     }
 
-    print("Sending info to supabase", session_row)
+    print("Sending call type info to supabase", session_row)
     # 1) catch any transport/auth errors
     try:
         resp = supabase.table("calls") \
                         .insert([session_row]) \
                         .execute()
     except Exception as e:
+        print("SupabaseRequestFailed:", e)
         # e.g. network failure, auth failure, bad URL, etc.
         raise HTTPException(500, f"Supabase request failed: {e}")
 

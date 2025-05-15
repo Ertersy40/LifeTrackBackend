@@ -46,7 +46,8 @@ async def webhook(request: Request):
     phone_number = payload['message']['call']['customer']['number']
     if messageType == "end-of-call-report":
         print("\n\n\n CALL ENDED \n\n\n")
-        callType = getCallType(payload['id'])
+        print(payload)
+        callType = getCallType(payload['message']['call']['id'])
         formatted_convo = format_conversation(payload['message']['artifact']['messages'][1:])
         if callType == 'onboarding':
             await handleOnboardingEnd(sid, phone_number, payload, formatted_convo)
@@ -97,7 +98,7 @@ async def handleOnboardingEnd(sid: str, phone_number: str, payload: dict, format
     print("User Object:", userObj)
     replace_user_data(phone_number, userObj)
     
-    deleteCall(payload['id'])
+    deleteCall(payload['message']['call']['id'])
 
 async def handleTaskEnd(phone_number: str, payload: str, formatted_convo: str):
     
@@ -113,7 +114,7 @@ async def handleTaskEnd(phone_number: str, payload: str, formatted_convo: str):
     setNextCall(phone_number, customerData, formatted_convo, payload['message']['call']['createdAt'], graphs)
     
     #  4. Delete the call type
-    deleteCall(payload['id'])
+    deleteCall(payload['message']['call']['id'])
 
     return 'no lol'
 

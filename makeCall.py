@@ -98,7 +98,7 @@ def makeCall(firstMessage: str, prompt: str, customerNumber: str, scheduledTime:
     },
     "assistant": assistant
   }
-  
+  print("Scheduled Time:", scheduledTime)
   if scheduledTime:
     body['schedulePlan'] = {}
     body['schedulePlan']['earliestAt'] = scheduledTime
@@ -177,7 +177,7 @@ Others tend to:
 - **If they ask about Privacy & Confidentiality:**
 All of what you share is private and encrypted—only you can ever see your LifeLog dashboard and journal entries.
 """
-  sid = makeCall('Hey! This is George from LifeTrack.', prompt, customerNumber, True)
+  sid = makeCall('Hey! This is George from LifeTrack.', prompt, customerNumber, None, True)
   return sid
 
 
