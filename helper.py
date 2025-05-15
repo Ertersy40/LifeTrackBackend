@@ -186,10 +186,19 @@ def getCurrentGraphData(phone_number: str):
                         .execute()
         tempGraph = graph
         del tempGraph['user_data_id']
-        if len(graphDataResp.data[0]['data']) > 0 :
-            tempGraph['last3Days'] = graphDataResp.data[0]['data'][-3:]
-        else:
-            tempGraph['last3Days'] = "no data yet!"
+        tempGraph['data'] = graphDataResp.data[0]['data']
         graphData.append(tempGraph)
     
-    return graphData
+    return graph['id'], graphData
+
+def updateGraphData(graphs: dict, graphId: str):
+    print("Updating graph data!", graphs)
+    
+    for graph in graphs:
+        resp = supabase.table('graphData') \
+                        .update({'data': graph['data']}) \
+                        .eq('graph_id', graphId) \
+                        .execute()
+    print("Updated graph data maybe!!")
+    
+    

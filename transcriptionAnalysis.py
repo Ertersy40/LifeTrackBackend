@@ -4,7 +4,7 @@ import json
 import aiohttp
 from dotenv import load_dotenv
 from makeCall import makeTaskCall
-from helper import convert_iso_to_gmt_plus10, convert_local_to_iso, getCurrentUserData, getCurrentGraphData
+from helper import convert_iso_to_gmt_plus10, convert_local_to_iso, getCurrentUserData, getCurrentGraphData, updateGraphData
 # Global cost counter:
 total_cost = 0
 
@@ -126,7 +126,15 @@ You can have as many keys and use lists etc. as you need to describe the user.
 
 async def UpdateGraphs(transcription: str, phone_number: str) -> list:
     
-    currentGraphData = getCurrentGraphData(phone_number)
+    graphId, currentGraphData = getCurrentGraphData(phone_number)
+    
+    lastEntryGraphData = []
+    
+    for graph in currentGraphData:
+        if len(graph['data']) > 0:
+            graph['lastEntry'] = graph['data'][-1:]
+    lastEntryGraphData.append(graph)
+        
     
     prompt = f"""
 {transcription}
@@ -135,15 +143,27 @@ Based on the above transcription of a phone call,
 create a object that represents the next entry into each of the graphs in the following format:
 {{"graphId": "new json data entry"}}
 
-Each new data entry should be an object structured in the following format:
+Each new data entry should be an object structured in the following format (match the current data format if it's there):
 {{
     // if it's a contribution graph → {{ "id": number (+1 of the last one), "date": "ISO 8601 formatted date based on current time", "value": number 0-4 rating }}
     // if it's a bar graph         → {{ "xAxisValueName (mostly a date)": number value }}
     // if it's a line graph          → {{ "xAxisName (called whatever you want (probably weekday name or date))": "xAxisValue", "value": "y-axis value" }}
 }}
+Here is the current graph data:
+{lastEntryGraphData}
 Your output should be in an object.
 """
-    graphs = await askLLM(prompt, isJson=True)
+    newGraphEntries = await askLLM(prompt, isJson=True)
+    
+    # Add the new entries to the graph and then send the data to supabase with the updateGraphData helper function
+    
+    graphs = []
+    for graph in currentGraphData:
+        if graph['id'] in newGraphEntries:
+            graph['data'].append(newGraphEntries[graph['id']])
+            graphs.append(graph)
+    
+    updateGraphData(graphs, graphId)
     
     return graphs
 
