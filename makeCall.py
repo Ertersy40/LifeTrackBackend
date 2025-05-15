@@ -112,7 +112,7 @@ def makeCall(firstMessage: str, prompt: str, customerNumber: str, scheduledTime:
   if response.status_code == 201:
       print('Call created successfully')
       print(response.json())
-      saveCallId(response.json()['id'], 'onboarding' if onboard else 'task', customerNumber)
+      saveCall(response.json()['id'], 'onboarding' if onboard else 'task', customerNumber)
       if 'transport' in response.json():
         return response.json()['transport']['callSid']
       else:
