@@ -4,7 +4,7 @@ import json
 import aiohttp
 from dotenv import load_dotenv
 from makeCall import makeTaskCall
-from helper import convert_iso_to_gmt_plus10, convert_local_to_iso
+from helper import convert_iso_to_gmt_plus10, convert_local_to_iso, getCurrentUserData, getCurrentGraphData
 # Global cost counter:
 total_cost = 0
 
@@ -122,6 +122,48 @@ You can have as many keys and use lists etc. as you need to describe the user.
 """
     userObject = await askLLM(prompt, isJson=True)
     return userObject
+
+
+async def UpdateGraphs(transcription: str, phone_number: str) -> list:
+    
+    currentGraphData = getCurrentGraphData(phone_number)
+    
+    prompt = f"""
+{transcription}
+-----------------------
+Based on the above transcription of a phone call,
+create a object that represents the next entry into each of the graphs in the following format:
+{{"graphId": "new json data entry"}}
+
+Each new data entry should be an object structured in the following format:
+{{
+    // if it's a contribution graph → {{ "id": number (+1 of the last one), "date": "ISO 8601 formatted date based on current time", "value": number 0-4 rating }}
+    // if it's a bar graph         → {{ "xAxisValueName (mostly a date)": number value }}
+    // if it's a line graph          → {{ "xAxisName (called whatever you want (probably weekday name or date))": "xAxisValue", "value": "y-axis value" }}
+}}
+Your output should be in an object.
+"""
+    graphs = await askLLM(prompt, isJson=True)
+    
+    return graphs
+
+async def updateUserData(transcription: str, phone_number: str) -> dict:
+    currentData = getCurrentUserData(phone_number)
+    prompt = f"""
+{transcription}
+-----------------------
+Based on the above transcription of a phone call,
+Update the following representation of the user:
+{currentData}
+You can give it any new keys you want and update information if they mention it's outdated
+only base it off the transcription
+This should only be an object that represents them as a person. Don't add things like the goals they want to set every day, that will be handled by another function.
+You should be logging longer term things like their friends, family, projects, how they want to be talked to, their job, etc.
+Calendar items will be logged by another function too. Though things like "plays basketball every Tuesday" is still important to note that they play basketball.
+You can have as many keys and use lists etc. as you need to describe the user.
+"""
+    newUserObject = await askLLM(prompt, isJson=True)
+    return newUserObject
 
 async def setNextCall(customerNumber: str, customerData: dict, transcription: str, createdAt: str, dataToCollect: dict={}):
     # Format time from 2025-05-12T05:17:19.039Z into May 12, 2025 at 3:17:19 PM

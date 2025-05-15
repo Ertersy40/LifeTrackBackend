@@ -1,3 +1,4 @@
+from fastapi import HTTPException
 from supabaseClient import supabase
 from datetime import datetime, timezone, timedelta
 
@@ -119,3 +120,76 @@ def convert_local_to_iso(local_str: str) -> str:
     # 4) Format as ISO8601 with 'Z'
     #    (millisecond precision is dropped; add if you need it)
     return dt_utc.strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def saveCall(callId: str, callType: str, customerNumber: str):
+    
+    session_row = {
+        "id": callId,
+        "call_type": callType,
+        "phone_number": customerNumber,
+    }
+
+    print("Sending info to supabase", session_row)
+    # 1) catch any transport/auth errors
+    try:
+        resp = supabase.table("calls") \
+                        .insert([session_row]) \
+                        .execute()
+    except Exception as e:
+        # e.g. network failure, auth failure, bad URL, etc.
+        raise HTTPException(500, f"Supabase request failed: {e}")
+
+    updated_rows = getattr(resp, "data", None)
+    
+def deleteCall(callId: str):
+  
+  resp = supabase.table("calls") \
+                        .delete() \
+                        .eq("id", callId) \
+                        .execute()
+  print(resp)
+  
+def getCallType(callId: str):
+    resp = supabase.table("calls") \
+                        .select("call_type") \
+                        .eq("id", callId) \
+                        .execute()
+    return resp.data[0]['call_type']
+
+
+def getCurrentUserData(phone_number: str):
+    resp = supabase.table('user_data') \
+                        .select("userdata") \
+                        .eq("phone_number", phone_number) \
+                        .execute()
+    return resp.data[0]['userdata']
+
+def getCurrentGraphData(phone_number: str):
+    userIdDataResp = supabase.table('user_data') \
+                        .select("id") \
+                        .eq("phone_number", phone_number) \
+                        .execute()
+    userId = userIdDataResp.data[0]['id']
+    
+    graphsResp = supabase.table('graphs') \
+                        .select("*") \
+                        .eq("user_data_id", userId) \
+                        .execute()
+
+    graphsInfo = graphsResp.data
+    graphData = []
+    for graph in graphsInfo:
+        graphDataResp = supabase.table('graph_data') \
+                        .select("data") \
+                        .eq("graph_id", graph['id']) \
+                        .execute()
+        tempGraph = graph
+        del tempGraph['user_data_id']
+        if len(graphDataResp.data[0]['data']) > 0 :
+            tempGraph['last3Days'] = graphDataResp.data[0]['data'][-3:]
+        else:
+            tempGraph['last3Days'] = "no data yet!"
+        graphData.append(tempGraph)
+    
+    return graphData

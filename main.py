@@ -5,9 +5,9 @@ from typing import List, Optional
 import uvicorn
 from makeCall import makeTaskCall, makeOnboardingCall
 from supabaseClient import supabase
-from transcriptionAnalysis import generateGraphObjects, getInitialUserObject, setNextCall
+from transcriptionAnalysis import generateGraphObjects, getInitialUserObject, setNextCall, updateUserData, UpdateGraphs
 from graphs import add_graph
-from helper import format_conversation, updateStatus, replace_user_data
+from helper import format_conversation, updateStatus, replace_user_data, deleteCall, getCallType
 
 app = FastAPI()
 
@@ -39,11 +39,6 @@ class OnboardRequest(BaseModel):
 
 @app.post("/webhook")
 async def webhook(request: Request):
-    """
-    Simulated webhook endpoint.
-    Receives a user ID and returns placeholder user info.
-    Replace this with real user lookup logic in the future.
-    """
     payload = await request.json()
     messageType = payload['message']['type']
     print(messageType)
@@ -51,23 +46,16 @@ async def webhook(request: Request):
     phone_number = payload['message']['call']['customer']['number']
     if messageType == "end-of-call-report":
         print("\n\n\n CALL ENDED \n\n\n")
+        callType = getCallType(payload['id'])
+        formatted_convo = format_conversation(payload['message']['artifact']['messages'][1:])
+        if callType == 'onboarding':
+            await handleOnboardingEnd(sid, phone_number, payload, formatted_convo)
+        else: #if callType == 'task':
+            handleTaskEnd(phone_number, payload, formatted_convo)
+        # else:
+        #     print("SHIT! Don't know the call type soz...", formatted_convo)
         print(sid)
-        if payload['message']['analysis']['successEvaluation'] == 'true':
-            updateStatus(sid, 'completed')
-            formatted_convo = format_conversation(payload['message']['artifact']['messages'][1:])
-            print("Formatted Conversation:", formatted_convo)
-            graphs = await generateGraphObjects(formatted_convo)
-            for graph in graphs:
-                print('\nAdding Graph:', graph)
-                add_graph(graph, phone_number)
-            
-            userObj = await getInitialUserObject(formatted_convo)
-            await setNextCall(phone_number, userObj, formatted_convo, payload['message']['call']['createdAt'], graphs)
-            
-            print("User Object:", userObj)
-            replace_user_data(phone_number, userObj)
-        else:
-            updateStatus(sid, 'failed')
+        
         
         
     elif messageType == "status-update":
@@ -93,7 +81,41 @@ async def webhook(request: Request):
     }
 
 
+async def handleOnboardingEnd(sid: str, phone_number: str, payload: dict, formatted_convo: str):
 
+    updateStatus(sid, 'completed')
+    
+    print("Formatted Conversation:", formatted_convo)
+    graphs = await generateGraphObjects(formatted_convo)
+    for graph in graphs:
+        print('\nAdding Graph:', graph)
+        add_graph(graph, phone_number)
+    
+    userObj = await getInitialUserObject(formatted_convo)
+    await setNextCall(phone_number, userObj, formatted_convo, payload['message']['call']['createdAt'], graphs)
+    
+    print("User Object:", userObj)
+    replace_user_data(phone_number, userObj)
+    
+    deleteCall(payload['id'])
+
+async def handleTaskEnd(phone_number: str, payload: str, formatted_convo: str):
+    
+    # Steps to handle Task End:
+    # 
+    #  1. Update graphs with new data
+    graphs = UpdateGraphs(formatted_convo, phone_number)
+    
+    #  2. Update user object with new data
+    customerData = updateUserData(formatted_convo, phone_number)
+    
+    #  3. Schedule the next call
+    setNextCall(phone_number, customerData, formatted_convo, payload['message']['call']['createdAt'], graphs)
+    
+    #  4. Delete the call type
+    deleteCall(payload['id'])
+
+    return 'no lol'
 
 @app.post("/onboarding")
 async def onboarding(req: OnboardRequest):

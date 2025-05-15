@@ -1,9 +1,13 @@
+from fastapi import HTTPException
 import requests
 import os
 import datetime
+import uuid
+from helper import saveCallId
+from supabaseClient import supabase
 # The Phone Number ID, and the Customer details for the call
 
-def makeCall(firstMessage: str, prompt: str, customerNumber: str, scheduledTime: str=None):
+def makeCall(firstMessage: str, prompt: str, customerNumber: str, scheduledTime: str=None, onboard: bool=False):
   # Your Vapi API Authorization token
   auth_token: str = os.getenv("VAPI_API_KEY")
   phone_number_id: str = os.getenv("VAPI_PHONE_ID")
@@ -88,6 +92,7 @@ def makeCall(firstMessage: str, prompt: str, customerNumber: str, scheduledTime:
   
   body = {
     'phoneNumberId': phone_number_id,
+    'name': "ob-" if onboard else "" + str(uuid.uuid4()),
     'customer': {
         'number': customerNumber,
     },
@@ -107,6 +112,7 @@ def makeCall(firstMessage: str, prompt: str, customerNumber: str, scheduledTime:
   if response.status_code == 201:
       print('Call created successfully')
       print(response.json())
+      saveCallId(response.json()['id'], 'onboarding' if onboard else 'task', customerNumber)
       if 'transport' in response.json():
         return response.json()['transport']['callSid']
       else:
@@ -171,7 +177,7 @@ Others tend to:
 - **If they ask about Privacy & Confidentiality:**
 All of what you share is private and encrypted—only you can ever see your LifeLog dashboard and journal entries.
 """
-  sid = makeCall('Hey! This is George from LifeTrack.', prompt, customerNumber)
+  sid = makeCall('Hey! This is George from LifeTrack.', prompt, customerNumber, True)
   return sid
 
 
