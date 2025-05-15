@@ -165,6 +165,16 @@ def getCurrentUserData(phone_number: str):
                         .execute()
     return resp.data[0]['userdata']
 
+def getCustomerData(phone_number: str):
+    resp = supabase.table('user_data') \
+                        .select("id, userdata") \
+                        .eq("phone_number", phone_number) \
+                        .execute()
+    id =  resp.data[0]['id']
+    userData = resp.data[0]['userdata']
+    return id, userData
+    
+
 def getCurrentGraphData(phone_number: str):
     userIdDataResp = supabase.table('user_data') \
                         .select("id") \

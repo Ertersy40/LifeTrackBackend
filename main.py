@@ -7,7 +7,7 @@ from makeCall import makeTaskCall, makeOnboardingCall
 from supabaseClient import supabase
 from transcriptionAnalysis import generateGraphObjects, getInitialUserObject, setNextCall, updateUserData, UpdateGraphs
 from graphs import add_graph
-from helper import format_conversation, updateStatus, replace_user_data, deleteCall, getCallType
+from helper import format_conversation, updateStatus, replace_user_data, deleteCall, getCallType, getCustomerData, getCurrentGraphData
 
 app = FastAPI()
 
@@ -32,6 +32,9 @@ class WebhookRequest(BaseModel):
     user_id: str
     
 class OnboardRequest(BaseModel):
+    phone_number: str
+    
+class TaskRequest(BaseModel):
     phone_number: str
 
 
@@ -198,7 +201,12 @@ async def onboarding(req: OnboardRequest):
     
     return {"sid": sid}
 
-
+@app.post("/task")
+async def webhook(req: TaskRequest):
+    id, data = getCustomerData(req.phone_number)
+    id, graphData = getCurrentGraphData(id)
+    makeTaskCall(req.phone_number, None, data, graphData)
+    
 
 
 # ---------- Run Server ----------
