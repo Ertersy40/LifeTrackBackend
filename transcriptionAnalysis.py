@@ -2,9 +2,10 @@ import openai
 import os
 import json
 import aiohttp
+import datetime
 from dotenv import load_dotenv
 from makeCall import makeTaskCall
-from helper import convert_iso_to_gmt_plus10, convert_local_to_iso, getCurrentUserData, getCurrentGraphData, updateGraphData
+from helper import convert_iso_to_gmt_plus10, convert_local_to_iso, getCurrentUserData, getCurrentGraphData, updateGraphData, getLastEntries
 # Global cost counter:
 total_cost = 0
 
@@ -67,6 +68,7 @@ async def generateGraphObjects(transcription: str) -> list:
     prompt = f"""
 {transcription}
 -----------------------
+Date and time: {datetime.datetime.now().strftime("%A")}, {datetime.datetime.now().strftime("%B")} {datetime.datetime.now().strftime("%d")}, {datetime.datetime.now().strftime("%Y")} at {datetime.datetime.now().strftime("%H:%M")}
 Based on the above transcription of a phone call,
 create a list of objects that represent graphs to achieve what the user wanted.
 Choose graph types that work best for the user's request.
@@ -127,18 +129,14 @@ You can have as many keys and use lists etc. as you need to describe the user.
 async def UpdateGraphs(transcription: str, phone_number: str) -> list:
     
     graphId, currentGraphData = getCurrentGraphData(phone_number)
-    
-    lastEntryGraphData = []
-    
-    for graph in currentGraphData:
-        if len(graph['data']) > 0:
-            graph['lastEntry'] = graph['data'][-1:]
-    lastEntryGraphData.append(graph)
-        
+    print('1', currentGraphData)
+    lastEntryGraphData = getLastEntries(currentGraphData)
+    print('2', currentGraphData)
     
     prompt = f"""
 {transcription}
 -----------------------
+Date and time: {datetime.datetime.now().strftime("%A")}, {datetime.datetime.now().strftime("%B")} {datetime.datetime.now().strftime("%d")}, {datetime.datetime.now().strftime("%Y")} at {datetime.datetime.now().strftime("%H:%M")}
 Based on the above transcription of a phone call,
 create a object that represents the next entry into each of the graphs in the following format:
 {{"graphId": "new json data entry"}}
@@ -162,6 +160,8 @@ Your output should be in an object.
         if graph['id'] in newGraphEntries:
             graph['data'].append(newGraphEntries[graph['id']])
             graphs.append(graph)
+        else:
+            print("uh oh... forgot graph", graph['title'])
     
     updateGraphData(graphs, graphId)
     

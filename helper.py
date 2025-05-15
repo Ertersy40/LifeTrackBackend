@@ -1,6 +1,8 @@
 from fastapi import HTTPException
 from supabaseClient import supabase
 from datetime import datetime, timezone, timedelta
+import copy
+
 
 def replace_user_data(phone_number: str, new_data: dict):
     """
@@ -165,14 +167,14 @@ def getCurrentUserData(phone_number: str):
                         .execute()
     return resp.data[0]['userdata']
 
-def getCustomerData(phone_number: str):
+def getCustomerData(user_id: str):
     resp = supabase.table('user_data') \
-                        .select("id, userdata") \
-                        .eq("phone_number", phone_number) \
+                        .select("phone_number, userdata") \
+                        .eq("user_id", user_id) \
                         .execute()
-    id =  resp.data[0]['id']
+    phone_number =  resp.data[0]['phone_number']
     userData = resp.data[0]['userdata']
-    return id, userData
+    return phone_number, userData
     
 
 def getCurrentGraphData(phone_number: str):
@@ -205,10 +207,23 @@ def updateGraphData(graphs: dict, graphId: str):
     print("Updating graph data!", graphs)
     
     for graph in graphs:
-        resp = supabase.table('graphData') \
+        del graph['lastEntry']
+        resp = supabase.table('graph_data') \
                         .update({'data': graph['data']}) \
                         .eq('graph_id', graphId) \
                         .execute()
     print("Updated graph data maybe!!")
     
+
+def getLastEntries(graphData):
+    lastEntryGraphData = []
     
+    for graph in graphData:
+        
+        if len(graph['data']) > 0:
+            graph['lastEntry'] = graph['data'][-1]
+            tempGraph = copy.deepcopy(graph)
+            del tempGraph['data']
+            lastEntryGraphData.append(tempGraph)
+
+    return lastEntryGraphData

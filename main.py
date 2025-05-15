@@ -7,7 +7,7 @@ from makeCall import makeTaskCall, makeOnboardingCall
 from supabaseClient import supabase
 from transcriptionAnalysis import generateGraphObjects, getInitialUserObject, setNextCall, updateUserData, UpdateGraphs
 from graphs import add_graph
-from helper import format_conversation, updateStatus, replace_user_data, deleteCall, getCallType, getCustomerData, getCurrentGraphData
+from helper import format_conversation, updateStatus, replace_user_data, deleteCall, getCallType, getCustomerData, getCurrentGraphData, getLastEntries
 
 app = FastAPI()
 
@@ -35,7 +35,7 @@ class OnboardRequest(BaseModel):
     phone_number: str
     
 class TaskRequest(BaseModel):
-    phone_number: str
+    userId: str
 
 
 # ---------- Routes ----------
@@ -55,7 +55,7 @@ async def webhook(request: Request):
         if callType == 'onboarding':
             await handleOnboardingEnd(sid, phone_number, payload, formatted_convo)
         else: #if callType == 'task':
-            handleTaskEnd(phone_number, payload, formatted_convo)
+            await handleTaskEnd(phone_number, payload, formatted_convo)
         # else:
         #     print("SHIT! Don't know the call type soz...", formatted_convo)
         print(sid)
@@ -108,13 +108,13 @@ async def handleTaskEnd(phone_number: str, payload: str, formatted_convo: str):
     # Steps to handle Task End:
     # 
     #  1. Update graphs with new data
-    graphs = UpdateGraphs(formatted_convo, phone_number)
+    graphs = await UpdateGraphs(formatted_convo, phone_number)
     
     #  2. Update user object with new data
-    customerData = updateUserData(formatted_convo, phone_number)
+    customerData = await updateUserData(formatted_convo, phone_number)
     
     #  3. Schedule the next call
-    setNextCall(phone_number, customerData, formatted_convo, payload['message']['call']['createdAt'], graphs)
+    await setNextCall(phone_number, customerData, formatted_convo, payload['message']['call']['createdAt'], graphs)
     
     #  4. Delete the call type
     deleteCall(payload['message']['call']['id'])
@@ -203,9 +203,10 @@ async def onboarding(req: OnboardRequest):
 
 @app.post("/task")
 async def webhook(req: TaskRequest):
-    id, data = getCustomerData(req.phone_number)
-    id, graphData = getCurrentGraphData(id)
-    makeTaskCall(req.phone_number, None, data, graphData)
+    phone_number, data = getCustomerData(req.userId)
+    id, graphData = getCurrentGraphData(phone_number)
+    lastEntries = getLastEntries(graphData)
+    makeTaskCall(phone_number, None, data, lastEntries)
     
 
 
