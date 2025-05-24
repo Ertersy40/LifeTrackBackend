@@ -125,28 +125,19 @@ You can have as many keys and use lists etc. as you need to describe the user.
     userObject = await askLLM(prompt, isJson=True)
     return userObject
 
-
 async def UpdateGraphs(transcription: str, phone_number: str) -> list:
     
     graphId, currentGraphData = getCurrentGraphData(phone_number)
-    print('1', currentGraphData)
     lastEntryGraphData = getLastEntries(currentGraphData)
-    print('2', currentGraphData)
     
     prompt = f"""
 {transcription}
 -----------------------
-Date and time: {datetime.datetime.now().strftime("%A")}, {datetime.datetime.now().strftime("%B")} {datetime.datetime.now().strftime("%d")}, {datetime.datetime.now().strftime("%Y")} at {datetime.datetime.now().strftime("%H:%M")}
+Current Date and time: {datetime.datetime.now().strftime("%A")}, {datetime.datetime.now().strftime("%B")} {datetime.datetime.now().strftime("%d")}, {datetime.datetime.now().strftime("%Y")} at {datetime.datetime.now().strftime("%H:%M")}
 Based on the above transcription of a phone call,
 create a object that represents the next entry into each of the graphs in the following format:
-{{"graphId": "new json data entry"}}
-
-Each new data entry should be an object structured in the following format (match the current data format if it's there):
-{{
-    // if it's a contribution graph → {{ "id": number (+1 of the last one), "date": "ISO 8601 formatted date based on current time", "value": number 0-4 rating }}
-    // if it's a bar graph         → {{ "xAxisValueName (mostly a date)": number value }}
-    // if it's a line graph          → {{ "xAxisName (called whatever you want (probably weekday name or date))": "xAxisValue", "value": "y-axis value" }}
-}}
+{{"graphId": [{{"date": "the date this data is for in dd/mm/yyyy format", "value": n}}]}}
+where n is the value that the transcription suggests. don't add units, that will be done later
 Here is the current graph data:
 {lastEntryGraphData}
 Your output should be in an object.
@@ -158,7 +149,7 @@ Your output should be in an object.
     graphs = []
     for graph in currentGraphData:
         if graph['id'] in newGraphEntries:
-            graph['data'].append(newGraphEntries[graph['id']])
+            graph['data'].extend(newGraphEntries[graph['id']])
             graphs.append(graph)
         else:
             print("uh oh... forgot graph", graph['title'])
