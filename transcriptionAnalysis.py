@@ -151,10 +151,9 @@ Your output should be in an object.
         if graph['id'] in newGraphEntries:
             graph['data'].extend(newGraphEntries[graph['id']])
             graphs.append(graph)
+            updateGraphData(graph['data'], graph['id'])
         else:
             print("uh oh... forgot graph", graph['title'])
-    
-    updateGraphData(graphs, graphId)
     
     return graphs
 

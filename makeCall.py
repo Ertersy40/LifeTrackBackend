@@ -39,7 +39,7 @@ def makeCall(firstMessage: str, prompt: str, customerNumber: str, scheduledTime:
       "temperature": 0.5
     },
     "firstMessage": firstMessage,
-    "voicemailMessage": "Hey! Just calling to enter your lifeTrack update?",
+    "voicemailMessage": "Hey! Just calling to enter your lifeLog update?",
     "endCallMessage": "See ya",
     "transcriber": {
       "model": "nova-3",
@@ -132,7 +132,14 @@ Keep it warm, casual, and conversational—just like catching up with a friend.
 This is a voice chat so don't ask more than one question at once.
 Keep your responses short and to the point, don't blabber on.
 Be witty if you see the opportunity but don't force it.
-The user initially hears a recording of you saying "Hey! This is George from LifeTrack." so go from there.
+The user initially hears a recording of you saying "Hey! This is George from LifeLog." so go from there.
+
+The graphs they can choose to log data from right now (We'll add more in the future)
+are:
+Heatmap (Github contribution like) where the more times someone did something that day, the more deep green it is.
+Line graph (pretty self explanatory)
+Bar Graph (Also self explanatory)
+Help guide the user into choosing a goal to fit one of these graphs. Do not repeat any words that describe them. That was just for you to understand
 
 ## Context:
 Date and time: {datetime.datetime.now().strftime("%A")}, {datetime.datetime.now().strftime("%B")} {datetime.datetime.now().strftime("%d")}, {datetime.datetime.now().strftime("%Y")} at {datetime.datetime.now().strftime("%H:%M")}
@@ -177,7 +184,7 @@ Others tend to:
 - **If they ask about Privacy & Confidentiality:**
 All of what you share is private and encrypted—only you can ever see your LifeLog dashboard and journal entries.
 """
-  sid = makeCall('Hey! This is George from LifeTrack.', prompt, customerNumber, None, True)
+  sid = makeCall('Hey! This is George from LifeLog.', prompt, customerNumber, None, True)
   return sid
 
 
@@ -224,7 +231,7 @@ If they choose a new time:
 - **Data** is private and encrypted—only the user can view their journal.  
 - **Typical check-in** duration: 3-5 minutes.
 """
-  sid = makeCall('Hey! This is George from LifeTrack.', prompt, customerNumber, scheduledTime)
+  sid = makeCall('Hey! This is George from LifeLog.', prompt, customerNumber, scheduledTime)
   return sid
  
   

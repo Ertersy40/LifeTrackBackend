@@ -203,15 +203,14 @@ def getCurrentGraphData(phone_number: str):
     
     return graph['id'], graphData
 
-def updateGraphData(graphs: dict, graphId: str):
-    print("Updating graph data!", graphs)
+def updateGraphData(graphData: list, graphId: str):
+    print("Updating graph data!", graphData)
+
+    resp = supabase.table('graph_data') \
+                    .update({'data': graphData}) \
+                    .eq('graph_id', graphId) \
+                    .execute()
     
-    for graph in graphs:
-        del graph['lastEntry']
-        resp = supabase.table('graph_data') \
-                        .update({'data': graph['data']}) \
-                        .eq('graph_id', graphId) \
-                        .execute()
     print("Updated graph data maybe!!")
     
 

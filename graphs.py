@@ -57,4 +57,4 @@ def add_graph(graph: dict, phone_number: str) -> dict:
     except Exception as e:
         raise RuntimeError(f"Supabase insert (graph_data) failed: {e}")
 
-    return updated_rows[0]
+    return graph_id
