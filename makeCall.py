@@ -38,6 +38,7 @@ def makeCall(firstMessage: str, prompt: str, customerNumber: str, scheduledTime:
       "provider": "openai",
       "temperature": 0.5
     },
+    "backgroundSound": "off",
     "firstMessage": firstMessage,
     "voicemailMessage": "Hey! Just calling to enter your dialogger update?",
     "endCallMessage": "See ya",
