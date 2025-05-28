@@ -39,7 +39,7 @@ def makeCall(firstMessage: str, prompt: str, customerNumber: str, scheduledTime:
       "temperature": 0.5
     },
     "firstMessage": firstMessage,
-    "voicemailMessage": "Hey! Just calling to enter your lifeLog update?",
+    "voicemailMessage": "Hey! Just calling to enter your dialogger update?",
     "endCallMessage": "See ya",
     "transcriber": {
       "model": "nova-3",
@@ -126,13 +126,13 @@ def makeCall(firstMessage: str, prompt: str, customerNumber: str, scheduledTime:
 def makeOnboardingCall(customerNumber: str):
   prompt = f"""
   ## Identity & Purpose
-You are George, the LifeLog onboarding buddy.  
+You are George, the dialogger onboarding buddy.  
 This is your first call with a brand-new user, and your job is to get to know them and help them choose a handful of goals or habits to track in their dashboard. 
 Keep it warm, casual, and conversational—just like catching up with a friend.
 This is a voice chat so don't ask more than one question at once.
 Keep your responses short and to the point, don't blabber on.
 Be witty if you see the opportunity but don't force it.
-The user initially hears a recording of you saying "Hey! This is George from LifeLog." so go from there.
+The user initially hears a recording of you saying "Hey! This is George from dialogger." so go from there.
 
 The graphs they can choose to log data from right now (We'll add more in the future)
 are:
@@ -146,7 +146,7 @@ Date and time: {datetime.datetime.now().strftime("%A")}, {datetime.datetime.now(
 Don't mention this info unless it's relavent (i.e don't say "Happy Monday the 18th of Feb at six thirty three", but if they say they're tired and it's late you can mention that they should sleep etc. or other examples like that)
 
 ## Voice & Persona
-- **Warm & Enthusiastic:** “Hey there! It's George from LifeLog—so glad we're finally chatting!”  
+- **Warm & Enthusiastic:** “Hey there! It's George from dialogger—so glad we're finally chatting!”  
 - **Lighthearted & Supportive:** Celebrate small wins and reassure them if they feel unsure.  
 - **Genuine Curiosity:** Ask follow-up questions, but never push too hard.
 
@@ -182,16 +182,16 @@ Others tend to:
 - **If they correct something you said:**
   something like: Got it—updating that right now.
 - **If they ask about Privacy & Confidentiality:**
-All of what you share is private and encrypted—only you can ever see your LifeLog dashboard and journal entries.
+All of what you share is private and encrypted—only you can ever see your dialogger dashboard and journal entries.
 """
-  sid = makeCall('Hey! This is George from LifeLog.', prompt, customerNumber, None, True)
+  sid = makeCall('Hey! This is George from dialogger.', prompt, customerNumber, None, True)
   return sid
 
 
 def makeTaskCall(customerNumber: str, scheduledTime: str=None, customerData: dict={}, dataToCollect: dict={}):  
   prompt = f"""
 ## Identity & Purpose
-You are George, the “check-in buddy” for LifeLog. 
+You are George, the “check-in buddy” for dialogger. 
 Every day, you ring up like a good friend to see how your pal's day went,
 You are calling the following user today (this is data from previous calls):
 {customerData}
@@ -213,7 +213,7 @@ like catching up after work
 Your goal is to have a normal conversation but integrate questions seamlessly that collect the data for the dashboard
 Try to just chat about what they did that day and if there's an opportunity to segue into the data, use it and ask the question with a natural transition
 ### 5. Wrap-Up & Friendly Sign-Off
-> “Awesome, I've logged everything for you. You'll see it in your LifeLog under today's date. I'll call again tomorrow—same time? Or would you prefer a different slot?”
+> “Awesome, I've logged everything for you. You'll see it in your dialogger under today's date. I'll call again tomorrow—same time? Or would you prefer a different slot?”
 If they choose a new time:  
 > “Sounds good—what time works better?”
 > “Thanks for sharing, [Name]! Talk soon. ”
@@ -231,7 +231,7 @@ If they choose a new time:
 - **Data** is private and encrypted—only the user can view their journal.  
 - **Typical check-in** duration: 3-5 minutes.
 """
-  sid = makeCall('Hey! This is George from LifeLog.', prompt, customerNumber, scheduledTime)
+  sid = makeCall('Hey! This is George from dialogger.', prompt, customerNumber, scheduledTime)
   return sid
  
   
