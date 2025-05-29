@@ -204,7 +204,7 @@ def getCurrentGraphData(phone_number: str):
         tempGraph['data'] = graphDataResp.data[0]['data']
         graphData.append(tempGraph)
     
-    return graph['id'], graphData
+    return graphData
 
 def updateGraphData(graphData: list, graphId: str):
     print("Updating graph data!", graphData)

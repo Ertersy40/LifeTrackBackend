@@ -221,7 +221,7 @@ async def onboarding(req: OnboardRequest):
 @app.post("/task")
 async def webhook(req: TaskRequest):
     phone_number, data = getCustomerData(req.userId)
-    id, graphData = getCurrentGraphData(phone_number)
+    graphData = getCurrentGraphData(phone_number)
     lastEntries = getLastEntries(graphData)
     makeTaskCall(phone_number, None, data, lastEntries)
     

@@ -127,7 +127,7 @@ You can have as many keys and use lists etc. as you need to describe the user.
 
 async def UpdateGraphs(transcription: str, phone_number: str) -> list:
     
-    graphId, currentGraphData = getCurrentGraphData(phone_number)
+    currentGraphData = getCurrentGraphData(phone_number)
     lastEntryGraphData = getLastEntries(currentGraphData)
     
     prompt = f"""
