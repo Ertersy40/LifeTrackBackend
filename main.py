@@ -113,7 +113,7 @@ async def handleOnboardingEnd(sid: str, phone_number: str, payload: dict, format
         updateGraphData(placeholderData, id)
     
     userObj = await getInitialUserObject(formatted_convo)
-    await setNextCall(phone_number, userObj, formatted_convo, payload['message']['call']['createdAt'], graphs)
+    await setNextCall(phone_number, userObj, formatted_convo, payload['message']['startedAt'], graphs)
     
     print("User Object:", userObj)
     replace_user_data(phone_number, userObj)
@@ -131,7 +131,7 @@ async def handleTaskEnd(phone_number: str, payload: str, formatted_convo: str):
     customerData = await updateUserData(formatted_convo, phone_number)
     
     #  3. Schedule the next call
-    await setNextCall(phone_number, customerData, formatted_convo, payload['message']['call']['createdAt'], graphs)
+    await setNextCall(phone_number, customerData, formatted_convo, payload['message']['startedAt'], graphs)
     
     #  4. Delete the call type
     deleteCall(payload['message']['call']['id'])
