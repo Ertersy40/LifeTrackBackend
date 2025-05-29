@@ -229,3 +229,20 @@ def getLastEntries(graphData):
             lastEntryGraphData.append(tempGraph)
 
     return lastEntryGraphData
+
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
+
+def getPhoneNumberId(phoneNumber):
+    if phoneNumber.startswith("+1"):
+        return os.getenv("VAPI_US_PHONE_ID")
+    elif phoneNumber.startswith("+61"):
+        return os.getenv("VAPI_AU_PHONE_ID")
+    elif phoneNumber.startswith("+64"):
+        return os.getenv("VAPI_NZ_PHONE_ID")
+    elif phoneNumber.startswith("+44"):
+        return os.getenv("VAPI_UK_PHONE_ID")
+    else:
+        print("Phone number not in provided country code options")

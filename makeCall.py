@@ -3,14 +3,15 @@ import requests
 import os
 import datetime
 import uuid
-from helper import saveCall
+from helper import saveCall, getPhoneNumberId
 from supabaseClient import supabase
 # The Phone Number ID, and the Customer details for the call
+
 
 def makeCall(firstMessage: str, prompt: str, customerNumber: str, scheduledTime: str=None, onboard: bool=False):
   # Your Vapi API Authorization token
   auth_token: str = os.getenv("VAPI_API_KEY")
-  phone_number_id: str = os.getenv("VAPI_PHONE_ID")
+  phone_number_id: str = getPhoneNumberId(customerNumber)
   server_url: str = os.getenv("SERVER_URL")
   print(server_url, auth_token, phone_number_id)
   server_url += '/webhook'
@@ -35,6 +36,16 @@ def makeCall(firstMessage: str, prompt: str, customerNumber: str, scheduledTime:
           "content": prompt
         }
       ],
+      "functions": [
+                {
+                    "name": "hangup",
+                    "description": "End the phone call",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {}
+                    }
+                }
+            ],
       "provider": "openai",
       "temperature": 0.5
     },
