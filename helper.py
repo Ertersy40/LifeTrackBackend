@@ -79,6 +79,7 @@ def convert_iso_to_gmt_plus10(iso_ts: str) -> str:
       'Weekday, Month D, YYYY H:MM:SS AM/PM (This is GMT +10)'
     by simply adding 10 hours—no OS-specific strftime hacks.
     """
+    print("Raw iso:", iso_ts)
     # 1) Parse the UTC timestamp
     dt_utc = datetime.fromisoformat(iso_ts.replace("Z", "+00:00"))
     
@@ -100,7 +101,9 @@ def convert_iso_to_gmt_plus10(iso_ts: str) -> str:
     # 4) Zero-pad minutes/seconds, then assemble
     time_str = f"{hour12}:{minute:02d}:{second:02d} {ampm}"
     
+    print(f"Converted time: {weekday}, {month} {day}, {year} {time_str}")
     return f"{weekday}, {month} {day}, {year} {time_str}"
+
 
 def convert_local_to_iso(local_str: str) -> str:
     """
