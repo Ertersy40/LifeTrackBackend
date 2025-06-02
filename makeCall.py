@@ -4,12 +4,9 @@ import os
 import datetime
 import uuid
 from helper import saveCall, getPhoneNumberId
-from supabaseClient import supabase
-# The Phone Number ID, and the Customer details for the call
 
 
 def makeCall(firstMessage: str, prompt: str, customerNumber: str, scheduledTime: str=None, onboard: bool=False):
-  # Your Vapi API Authorization token
   auth_token: str = os.getenv("VAPI_API_KEY")
   phone_number_id: str = getPhoneNumberId(customerNumber)
   server_url: str = os.getenv("SERVER_URL")
@@ -21,6 +18,7 @@ def makeCall(firstMessage: str, prompt: str, customerNumber: str, scheduledTime:
       'Authorization': f'Bearer {auth_token}',
       'Content-Type': 'application/json',
   }
+  
   assistant = {
     "name": "Billy",
     "serverUrl": server_url,
@@ -110,7 +108,7 @@ def makeCall(firstMessage: str, prompt: str, customerNumber: str, scheduledTime:
     },
     "assistant": assistant
   }
-  print("Scheduled Time:", scheduledTime)
+  
   if scheduledTime:
     body['schedulePlan'] = {}
     body['schedulePlan']['earliestAt'] = scheduledTime
@@ -249,8 +247,3 @@ If they choose a new time:
 """
   sid = makeCall('Hey! This is George from dialogger.', prompt, customerNumber, scheduledTime)
   return sid
- 
-  
-if __name__ == "__main__":
-  makeOnboardingCall('+61409466685')
-  

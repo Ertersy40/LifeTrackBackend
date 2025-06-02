@@ -84,7 +84,9 @@ Each object should be structured in the following format:
     }}
 }}
 """
+    
     graphs = await askLLM(prompt, isJson=True)
+    
     return graphs
 
 async def getInitialUserObject(transcription: str) -> dict:
@@ -122,12 +124,15 @@ You should be logging longer term things like their friends, family, projects, h
 Calendar items will be logged by another function too. Though things like "plays basketball every Tuesday" is still important to note that they play basketball.
 You can have as many keys and use lists etc. as you need to describe the user.
 """
+    
     userObject = await askLLM(prompt, isJson=True)
+    
     return userObject
 
 async def UpdateGraphs(transcription: str, phone_number: str) -> list:
     
     currentGraphData = getCurrentGraphData(phone_number)
+    
     lastEntryGraphData = getLastEntries(currentGraphData)
     
     prompt = f"""
@@ -154,11 +159,13 @@ Your output should be in an object.
             updateGraphData(graph['data'], graph['id'])
         else:
             print("uh oh... forgot graph", graph['title'])
+            # Could potentially loop back and ask to fix but I don't want to waste credits for now
     
     return graphs
 
 async def updateUserData(transcription: str, phone_number: str) -> dict:
     currentData = getCurrentUserData(phone_number)
+    
     prompt = f"""
 {transcription}
 -----------------------
@@ -172,7 +179,9 @@ You should be logging longer term things like their friends, family, projects, h
 Calendar items will be logged by another function too. Though things like "plays basketball every Tuesday" is still important to note that they play basketball.
 You can have as many keys and use lists etc. as you need to describe the user.
 """
+
     newUserObject = await askLLM(prompt, isJson=True)
+    
     return newUserObject
 
 async def setNextCall(customerNumber: str, customerData: dict, transcription: str, createdAt: str, dataToCollect: dict={}):
