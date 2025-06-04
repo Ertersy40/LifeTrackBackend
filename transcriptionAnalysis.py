@@ -202,6 +202,7 @@ async def setNextCall(customerNumber: str, customerData: dict, transcription: st
     {formattedTime}
     Don't put quotations around it to show it's a string or anything. Just the text. Nothing else.
     It will be parsed directly so leave it as is.
+    If the call went to voicemail or the user doesn't want a call, return null
     """
     
     nextCall = await askLLM(prompt)
