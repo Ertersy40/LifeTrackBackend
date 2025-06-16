@@ -1,7 +1,6 @@
 # LifeTrackBackend
-[![Ask DeepWiki](https://devin.ai/assets/askdeepwiki.png)](https://deepwiki.com/Ertersy40/LifeTrackBackend)
 
-LifeTrackBackend is a Python-based backend service designed to power an automated personal tracking and check-in system, potentially named "Dialogger" or "LifeTrack." It utilizes phone calls (via the Vapi API) and AI-driven transcription analysis (OpenAI GPT-4) to onboard users, help them define trackable goals/habits, and conduct regular check-in calls to update their progress. All user data, graph configurations, and progress are stored in a Supabase database.
+LifeTrackBackend is a Python-based backend service designed to power an automated personal tracking and check-in system, named "Dialogger". It utilizes phone calls (via the Vapi API) and AI-driven transcription analysis (OpenAI GPT-4) to onboard users, help them define trackable goals/habits, and conduct regular check-in calls to update their progress. All user data, graph configurations, and progress are stored in a Supabase database.
 
 ## Features
 
